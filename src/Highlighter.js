@@ -103,7 +103,7 @@ export default function Highlighter ({
           const searchWordsIndexes = chunk.searchWordsIndexes
 
           const categories = searchWordsIndexes.reduce((categories, searchWordIndex, index) => {
-            if (searchWordsIndexes.indexOf(searchWordIndex) == index) { // unique
+            if (searchWordsIndexes.indexOf(searchWordIndex) === index) { // unique
               categories.push(categoryPerSearchWordIndex[searchWordIndex])
             }
             return categories
@@ -130,9 +130,9 @@ export default function Highlighter ({
               style: highlightStyles
             }
           } else {
-            for (let i=categories.length - 1; i >= 0; i--) {
+            for (let i = categories.length - 1; i >= 0; i--) {
               const category = categories[i]
-              const padding = (categories.length - 1 - i) * 2;
+              const padding = (categories.length - 1 - i) * 2
 
               let children
               if (i === categories.length - 1) {
