@@ -103,8 +103,9 @@ export default function Highlighter ({
           const searchWordsIndexes = chunk.searchWordsIndexes
 
           const categories = searchWordsIndexes.reduce((categories, searchWordIndex, index) => {
-            if (searchWordsIndexes.indexOf(searchWordIndex) === index) { // unique
-              categories.push(categoryPerSearchWordIndex[searchWordIndex])
+            const category = categoryPerSearchWordIndex[searchWordIndex]
+            if (!categories.includes(category)) {
+              categories.push(category)
             }
             return categories
           }, []).sort((first, second) => {
