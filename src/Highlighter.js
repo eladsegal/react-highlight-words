@@ -28,6 +28,8 @@ Highlighter.propTypes = {
       PropTypes.instanceOf(RegExp)
     ])
   ).isRequired,
+  categoryPerSearchWordIndex: PropTypes.arrayOf(PropTypes.string),
+  highlightClassNamePerCategory: PropTypes.object,
   textToHighlight: PropTypes.string.isRequired,
   unhighlightClassName: PropTypes.string,
   unhighlightStyle: PropTypes.object
@@ -50,18 +52,23 @@ export default function Highlighter ({
   highlightTag = 'mark',
   sanitize,
   searchWords,
+  categoryPerSearchWordIndex,
+  highlightClassNamePerCategory,
   textToHighlight,
   unhighlightClassName = '',
   unhighlightStyle,
   ...rest
 }) {
+  const splitIntersectingChunks = categoryPerSearchWordIndex &&
+                                  categoryPerSearchWordIndex.length > 0
   const chunks = findAll({
     autoEscape,
     caseSensitive,
     findChunks,
     sanitize,
     searchWords,
-    textToHighlight
+    textToHighlight,
+    splitIntersectingChunks
   })
   const HighlightTag = highlightTag
   let highlightIndex = -1
@@ -76,7 +83,6 @@ export default function Highlighter ({
     return mapped
   }
   const memoizedLowercaseProps = memoizeOne(lowercaseProps)
-
   return createElement('span', {
     className,
     ...rest,
@@ -86,30 +92,87 @@ export default function Highlighter ({
       if (chunk.highlight) {
         highlightIndex++
 
-        let highlightClass
-        if (typeof highlightClassName === 'object') {
-          if (!caseSensitive) {
-            highlightClassName = memoizedLowercaseProps(highlightClassName)
-            highlightClass = highlightClassName[text.toLowerCase()]
-          } else {
-            highlightClass = highlightClassName[text]
-          }
-        } else {
-          highlightClass = highlightClassName
-        }
-
         const isActive = highlightIndex === +activeIndex
 
-        highlightClassNames = `${highlightClass} ${isActive ? activeClassName : ''}`
         highlightStyles = isActive === true && activeStyle != null
           ? Object.assign({}, highlightStyle, activeStyle)
           : highlightStyle
 
-        const props = {
-          children: text,
-          className: highlightClassNames,
-          key: index,
-          style: highlightStyles
+        let props
+        if (splitIntersectingChunks) {
+          const searchWordsIndexes = chunk.searchWordsIndexes
+
+          const categories = searchWordsIndexes.reduce((categories, searchWordIndex, index) => {
+            if (searchWordsIndexes.indexOf(searchWordIndex) == index) { // unique
+              categories.push(categoryPerSearchWordIndex[searchWordIndex])
+            }
+            return categories
+          }, []).sort((first, second) => {
+            const firstOrder = +first.substring(first.indexOf('_') + 1)
+            const secondOrder = +second.substring(second.indexOf('_') + 1)
+
+            if (!isNaN(firstOrder) && !isNaN(secondOrder)) {
+              return firstOrder - secondOrder
+            }
+            return first.localeCompare(second)
+          })
+
+          const jointCategories = categories.join('-')
+          let highlightClass = highlightClassNamePerCategory[jointCategories]
+
+          if (highlightClass) {
+            highlightClassNames = `${highlightClass} ${isActive ? activeClassName : ''}`
+
+            props = {
+              children: text,
+              className: highlightClassNames,
+              key: index,
+              style: highlightStyles
+            }
+          } else {
+            for (let i=categories.length - 1; i >= 0; i--) {
+              const category = categories[i]
+              const padding = (categories.length - 1 - i) * 2;
+
+              let children
+              if (i === categories.length - 1) {
+                children = text
+              } else {
+                children = createElement(HighlightTag, props)
+              }
+
+              highlightClass = highlightClassNamePerCategory[category]
+              highlightClassNames = `${highlightClass} ${isActive ? activeClassName : ''}`
+
+              props = {
+                children,
+                className: highlightClassNames,
+                key: `${index}_${i}`,
+                style: {...highlightStyles, 'paddingBottom': `${padding}px`}
+              }
+            }
+          }
+        } else {
+          let highlightClass
+          if (typeof highlightClassName === 'object') {
+            if (!caseSensitive) {
+              highlightClassName = memoizedLowercaseProps(highlightClassName)
+              highlightClass = highlightClassName[text.toLowerCase()]
+            } else {
+              highlightClass = highlightClassName[text]
+            }
+          } else {
+            highlightClass = highlightClassName
+          }
+
+          highlightClassNames = `${highlightClass} ${isActive ? activeClassName : ''}`
+
+          props = {
+            children: text,
+            className: highlightClassNames,
+            key: index,
+            style: highlightStyles
+          }
         }
 
         // Don't attach arbitrary props to DOM elements; this triggers React DEV warnings (https://fb.me/react-unknown-prop)

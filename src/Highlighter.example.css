@@ -18,6 +18,22 @@
   background-color: #ffd54f;
 }
 
+.Highlight1 {
+  background-color: red;
+}
+
+.Highlight2 {
+  background-color: green;
+}
+
+.Highlight3 {
+  background-color: blue;
+}
+
+.Highlight4 {
+  background-color: purple;
+}
+
 .Active {
   background-color: #f48f42;
 }

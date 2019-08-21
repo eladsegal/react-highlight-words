@@ -83,6 +83,18 @@ export default class HighlighterExample extends Component {
           searchWords={searchWords}
           textToHighlight={textToHighlight}
         />
+        <br/>
+        <br/>
+        <Highlighter
+          activeClassName={styles.Active}
+          activeIndex={activeIndex}
+          highlightStyle={{ fontWeight: 'normal' }}
+
+          searchWords={searchWords}
+          categoryPerSearchWordIndex={['predicted_0', 'gold_1', 'test_2']}
+          highlightClassNamePerCategory={{predicted_0: styles.Highlight1, 'gold_1': styles.Highlight2}}
+          textToHighlight={textToHighlight}
+        />
 
         <p className={styles.Footer}>
           <a href='https://github.com/bvaughn/react-highlight-words/blob/master/src/Highlighter.example.js'>
