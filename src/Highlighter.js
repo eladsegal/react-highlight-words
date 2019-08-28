@@ -53,20 +53,23 @@ export default function Highlighter ({
   sanitize,
   searchWords,
   categoryPerSearchWordIndex,
+  spans,
+  categoryPerSpanIndex,
   highlightClassNamePerCategory,
   textToHighlight,
   unhighlightClassName = '',
   unhighlightStyle,
   ...rest
 }) {
-  const splitIntersectingChunks = categoryPerSearchWordIndex &&
-                                  categoryPerSearchWordIndex.length > 0
+  const splitIntersectingChunks = (categoryPerSearchWordIndex && categoryPerSearchWordIndex.length > 0) ||
+                                  (categoryPerSpanIndex && categoryPerSpanIndex.length > 0)
   const chunks = findAll({
     autoEscape,
     caseSensitive,
     findChunks,
     sanitize,
     searchWords,
+    spans,
     textToHighlight,
     splitIntersectingChunks
   })
@@ -100,23 +103,45 @@ export default function Highlighter ({
 
         let props
         if (splitIntersectingChunks) {
-          const searchWordsIndexes = chunk.searchWordsIndexes
+          // TODO: Fix code duplication when I have time
+          let categories = []
+          const categoriesSortFunc = (first, second) => {
+            const firstSplitIndex = first.indexOf('_')
+            const secondSplitIndex = second.indexOf('_')
 
-          const categories = searchWordsIndexes.reduce((categories, searchWordIndex, index) => {
-            const category = categoryPerSearchWordIndex[searchWordIndex]
-            if (!categories.includes(category)) {
-              categories.push(category)
-            }
-            return categories
-          }, []).sort((first, second) => {
-            const firstOrder = +first.substring(first.indexOf('_') + 1)
-            const secondOrder = +second.substring(second.indexOf('_') + 1)
+            const firstOrder = +first.substring(firstSplitIndex + 1)
+            const firstName = first.substring(0, firstSplitIndex)
+            const secondOrder = +second.substring(secondSplitIndex + 1)
+            const secondName = second.substring(0, secondSplitIndex)
 
             if (!isNaN(firstOrder) && !isNaN(secondOrder)) {
-              return firstOrder - secondOrder
+              if (firstOrder !== secondOrder) {
+                return firstOrder - secondOrder
+              }
+              return firstName.localeCompare(secondName)
             }
             return first.localeCompare(second)
-          })
+          }
+
+          if (chunk.searchWordsIndexes) {
+            categories = chunk.searchWordsIndexes.reduce((categories_acc, searchWordIndex, index) => {
+              const category = categoryPerSearchWordIndex[searchWordIndex]
+              if (!categories_acc.includes(category)) {
+                categories_acc.push(category)
+              }
+              return categories_acc
+            }, categories).sort(categoriesSortFunc)
+          }
+
+          if (chunk.spansIndexes) {
+            categories = chunk.spansIndexes.reduce((categories_acc, spanIndex, index) => {
+              const category = categoryPerSpanIndex[spanIndex]
+              if (!categories_acc.includes(category)) {
+                categories_acc.push(category)
+              }
+              return categories_acc
+            }, categories).sort(categoriesSortFunc)
+          }
 
           const jointCategories = categories.join('-')
           let highlightClass = highlightClassNamePerCategory[jointCategories]

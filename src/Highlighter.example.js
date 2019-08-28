@@ -92,7 +92,9 @@ export default class HighlighterExample extends Component {
 
           searchWords={searchWords}
           categoryPerSearchWordIndex={['predicted_0', 'gold_1', 'test_2']}
-          highlightClassNamePerCategory={{predicted_0: styles.Highlight1, 'gold_1': styles.Highlight2}}
+          spans={[[74, 82]]}
+          categoryPerSpanIndex={['predicted_0']}
+          highlightClassNamePerCategory={{predicted_0: styles.Highlight1, 'gold_1': styles.Highlight2, 'predicted_0-gold_1': styles.Highlight3}}
           textToHighlight={textToHighlight}
         />
 
