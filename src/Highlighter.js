@@ -30,6 +30,7 @@ Highlighter.propTypes = {
   ).isRequired,
   categoryPerSearchWordIndex: PropTypes.arrayOf(PropTypes.string),
   highlightClassNamePerCategory: PropTypes.object,
+  paddingMultiplier: PropTypes.number,
   textToHighlight: PropTypes.string.isRequired,
   unhighlightClassName: PropTypes.string,
   unhighlightStyle: PropTypes.object
@@ -56,6 +57,7 @@ export default function Highlighter ({
   spans,
   categoryPerSpanIndex,
   highlightClassNamePerCategory,
+  paddingMultiplier,
   textToHighlight,
   unhighlightClassName = '',
   unhighlightStyle,
@@ -156,7 +158,7 @@ export default function Highlighter ({
               style: highlightStyles
             }
           } else {
-            const paddingMultiplier = rest.paddingMultiplier !== undefined ? rest.paddingMultiplier : 2
+            paddingMultiplier = paddingMultiplier !== undefined ? rest.paddingMultiplier : 2
             for (let i = categories.length - 1; i >= 0; i--) {
               const category = categories[i]
               const padding = (categories.length - 1 - i) * paddingMultiplier
