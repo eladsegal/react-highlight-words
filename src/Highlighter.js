@@ -156,7 +156,7 @@ export default function Highlighter ({
               style: highlightStyles
             }
           } else {
-            const paddingMultiplier = rest.paddingMultiplier !== undefined ? rest.paddingMultiplier : 2;
+            const paddingMultiplier = rest.paddingMultiplier !== undefined ? rest.paddingMultiplier : 2
             for (let i = categories.length - 1; i >= 0; i--) {
               const category = categories[i]
               const padding = (categories.length - 1 - i) * paddingMultiplier
